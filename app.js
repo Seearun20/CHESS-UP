@@ -1,12 +1,20 @@
 const express = require('express');
-const socket = require('socket.io');
 const http = require('http');
+const { Server } = require("socket.io"); // Import `Server` from socket.io
 const path = require('path');
 const { Chess } = require('chess.js');
 
 const app = express();
 const server = http.createServer(app);
-const io = socket(server);
+
+// ✅ Fix: WebSockets CORS settings for deployment
+const io = new Server(server, {
+    cors: {
+        origin: "*",
+        methods: ["GET", "POST"]
+    }
+});
+
 const chess = new Chess();
 let players = {}; // Stores player sockets
 let currentPlayer = 'w';
@@ -18,53 +26,56 @@ app.get('/', (req, res) => {
     res.render('index', { title: 'Chess' });
 });
 
-io.on("connection", (uniquesocket) => {
-    console.log('A user connected:', uniquesocket.id);
+io.on("connection", (socket) => {
+    console.log('A user connected:', socket.id);
 
     // Assign white and black players
     if (!players.white) {
-        players.white = uniquesocket.id;
-        uniquesocket.emit("playerRole", "w");
+        players.white = socket.id;
+        socket.emit("playerRole", "w");
     } else if (!players.black) {
-        players.black = uniquesocket.id;
-        uniquesocket.emit("playerRole", "b");
+        players.black = socket.id;
+        socket.emit("playerRole", "b");
     } else {
-        uniquesocket.emit("spectatorRole");
+        socket.emit("spectatorRole");
     }
 
     // Send initial board state
-    uniquesocket.emit("boardState", chess.fen());
+    socket.emit("boardState", chess.fen());
 
-    uniquesocket.on("disconnect", () => {
-        console.log('User disconnected:', uniquesocket.id);
-        if (uniquesocket.id === players.white) {
+    socket.on("disconnect", () => {
+        console.log('User disconnected:', socket.id);
+        if (socket.id === players.white) {
             delete players.white;
-        } else if (uniquesocket.id === players.black) {
+        } else if (socket.id === players.black) {
             delete players.black;
         }
+        io.emit("boardState", chess.fen()); // ✅ Refresh board on disconnect
     });
 
-    uniquesocket.on("move", (move) => {
+    socket.on("move", (move) => {
         try {
             // ✅ Fixed: Correct turn validation
-            if (chess.turn() === "w" && uniquesocket.id !== players.white) return;
-            if (chess.turn() === "b" && uniquesocket.id !== players.black) return;
+            if (chess.turn() === "w" && socket.id !== players.white) return;
+            if (chess.turn() === "b" && socket.id !== players.black) return;
 
             const result = chess.move(move);
             if (result) {
                 currentPlayer = chess.turn();
                 io.emit("boardState", chess.fen()); // ✅ Correct: Broadcast new board state
             } else {
-                uniquesocket.emit("invalidMove");
+                socket.emit("invalidMove");
                 console.log("Invalid move attempted:", move);
             }
         } catch (e) {
             console.log("Move error:", e);
-            uniquesocket.emit("invalidMove", move);
+            socket.emit("invalidMove", move);
         }
     });
 });
 
-server.listen(3000, () => {
-    console.log('Server is running on port 3000');
+// ✅ Fix: Use `process.env.PORT` for Vercel
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
 });
