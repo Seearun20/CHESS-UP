@@ -5,8 +5,29 @@ const boardElement = document.querySelector(".chessboard");
 let draggedPiece = null;
 let sourceSquare = null;
 let playerRole = null;
+let gameReady = false;
 
-// Function to get Unicode for chess pieces
+document.getElementById('submit-name').addEventListener('click', () => {
+    const playerName = document.getElementById('player-name').value.trim();
+    if (playerName) {
+        document.getElementById('name-modal').style.display = 'none';
+        document.getElementById('loading-overlay').style.display = 'flex';
+        socket.emit('playerRegistered', playerName);
+    }
+});
+
+socket.on("playerNames", (names) => {
+    document.getElementById('white-player-name').textContent = names.white;
+    document.getElementById('black-player-name').textContent = names.black || "Waiting...";
+    document.getElementById('loading-overlay').style.display = 'none';
+});
+
+socket.on("gameReady", () => {
+    gameReady = true;
+    document.getElementById('loading-overlay').style.display = 'none';
+    renderBoard();
+});
+
 const getPieceUnicode = (piece) => {
     const unicodePieces = {
         p: "♙", r: "♖", n: "♘", b: "♗", q: "♕", k: "♔",
@@ -15,10 +36,9 @@ const getPieceUnicode = (piece) => {
     return unicodePieces[piece] || "";
 };
 
-// Function to render the chessboard
 const renderBoard = () => {
     const board = chess.board();
-    boardElement.innerHTML = ""; // Clear old board
+    boardElement.innerHTML = ""; 
 
     board.forEach((row, index) => {
         row.forEach((square, squareIndex) => {
@@ -35,9 +55,15 @@ const renderBoard = () => {
                 const pieceElement = document.createElement("div");
                 pieceElement.classList.add("piece", square.color === "w" ? "white" : "black");
                 pieceElement.innerHTML = getPieceUnicode(square.type);
-                pieceElement.draggable = playerRole === square.color;
+                
+                // Only allow dragging if game is ready and it's the player's color
+                pieceElement.draggable = gameReady && playerRole === square.color;
 
                 pieceElement.addEventListener("dragstart", (e) => {
+                    if (!gameReady) {
+                        e.preventDefault();
+                        return;
+                    }
                     if (pieceElement.draggable) {
                         draggedPiece = pieceElement;
                         sourceSquare = { row: index, col: squareIndex };
@@ -53,9 +79,15 @@ const renderBoard = () => {
                 squareElement.appendChild(pieceElement);
             }
 
-            squareElement.addEventListener("dragover", (e) => e.preventDefault());
+            squareElement.addEventListener("dragover", (e) => {
+                if (gameReady) e.preventDefault();
+            });
 
             squareElement.addEventListener("drop", (e) => {
+                if (!gameReady) {
+                    e.preventDefault();
+                    return;
+                }
                 e.preventDefault();
                 if (draggedPiece) {
                     const targetSquare = {
@@ -71,45 +103,68 @@ const renderBoard = () => {
     });
 };
 
-// Function to handle the move
 const handleMove = (source, target) => {
+    // Additional check to prevent moves before game is ready
+    if (!gameReady) return;
+
     const move = {
         from: `${String.fromCharCode(97 + source.col)}${8 - source.row}`,
         to: `${String.fromCharCode(97 + target.col)}${8 - target.row}`,
         promotion: "q"
     };
 
-    const result = chess.move(move); // Apply move locally
+    const result = chess.move(move);
 
     if (result) {
-        renderBoard(); // Update board
-        socket.emit("move", move); // Send move to server
+        renderBoard();
+        socket.emit("move", move);
     }
 };
 
-// Receiving player role
 socket.on("playerRole", (role) => {
     playerRole = role;
     renderBoard();
 });
 
-// Spectator mode
 socket.on("spectatorRole", function () {
     playerRole = null;
+    gameReady = false;
     renderBoard();
 });
 
-// Receiving board state from server
-socket.on("boardState", function (fen) {
+socket.on("move", function (move) {
+    chess.move(move);
+    renderBoard();
+});
+
+socket.on("playerDisconnected", () => {
+    console.log("Opponent disconnected. Resetting game...");
+    
+    chess.reset();
+    renderBoard();
+    gameReady = false;
+    
+    socket.emit("resetGame");
+    
+    alert("Opponent disconnected. Waiting for a new player...");
+});
+
+socket.on("connect", () => {
+    console.log("Reconnected to server.");
+    socket.emit("getBoardState");
+});
+
+socket.on("boardState", (fen) => {
+    console.log("Updating board to latest state:", fen);
     chess.load(fen);
     renderBoard();
 });
 
-// Receiving a move from the server
-socket.on("move", function (move) {
-    chess.move(move); // Apply move locally
+socket.on("resetGame", () => {
+    console.log("Game reset by server.");
+    gameReady = false;
+    chess.reset();
     renderBoard();
 });
 
-// Initial board rendering
 renderBoard();

@@ -61,35 +61,98 @@
             opacity: 0.6;
             transform: scale(1.05);
         }
+
+        #name-modal {
+            background: rgba(0, 0, 0, 0.7);
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        #loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1100;
+            display: none;
+        }
+
+        .player-tag {
+            padding: 10px 20px;
+            border-radius: 12px;
+            font-weight: bold;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .player-tag .color-indicator {
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+        }
+
+        .white-player {
+            background: linear-gradient(135deg, #f0f0f0 0%, #e0e0e0 100%);
+            color: #1a1a1a;
+        }
+
+        .black-player {
+            background: linear-gradient(135deg, #1a1a1a 0%, #333333 100%);
+            color: #f0f0f0;
+        }
     </style>
 </head>
 <body class="min-h-screen flex flex-col justify-center items-center">
+    <!-- Name Input Modal -->
+    <div id="name-modal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center">
+        <div class="bg-white p-8 rounded-lg shadow-xl text-center">
+            <h2 class="text-2xl font-bold mb-4">Enter Your Name</h2>
+            <input type="text" id="player-name" class="w-full p-2 border rounded mb-4" placeholder="Your Name">
+            <button id="submit-name" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg">
+                Start Game
+            </button>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay">
+        <div class="text-white text-3xl">Waiting for another player...</div>
+    </div>
+
     <div class="container mx-auto px-4">
         <header class="text-center mb-8">
             <h1 class="text-5xl font-bold text-white mb-4" style="font-family: 'Orbitron', sans-serif;">
                 A-RunChess
             </h1>
-            <p class="text-xl text-gray-300 max-w-2xl mx-auto">
-                Immerse yourself in the strategic world of chess. Challenge your mind and test your tactical skills.
-            </p>
+            <div class="flex justify-center space-x-8 mb-4">
+                <div id="white-player-name" class="player-tag white-player">
+                    <span class="color-indicator" style="background-color: #f0f0f0;"></span>
+                    Waiting...
+                </div>
+                <div id="black-player-name" class="player-tag black-player">
+                    <span class="color-indicator" style="background-color: #1a1a1a;"></span>
+                    Waiting...
+                </div>
+            </div>
         </header>
 
         <div class="flex justify-center items-center space-x-8">
             <div class="bg-gradient-to-br from-blue-900 to-indigo-900 p-6 rounded-2xl shadow-2xl">
                 <div class="chessboard w-96 h-96">
                     <!-- Chessboard will be populated by JavaScript -->
-                </div>
-            </div>
-
-            <div class="bg-white/10 p-6 rounded-2xl text-white shadow-xl">
-                <h2 class="text-2xl font-bold mb-4">Game Controls</h2>
-                <div class="space-y-4">
-                    <button class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300">
-                        New Game
-                    </button>
-                    <button class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300">
-                        Undo Move
-                    </button>
                 </div>
             </div>
         </div>
