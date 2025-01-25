@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <title>A-RunChess</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@300;400;700&display=swap');
+        
+        body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            font-family: 'Roboto', sans-serif;
+        }
+
+        .chessboard {
+            display: grid;
+            grid-template-columns: repeat(8, minmax(0, 1fr));
+            grid-template-rows: repeat(8, minmax(0, 1fr));
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .piece.white {
+            color: #f0f0f0;
+            filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.5));
+        }
+
+        .piece.black {
+            color: #1a1a1a;
+            filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.5));
+        }
+
+        .square {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .square.light {
+            background-color: #e4d5b7;
+        }
+
+        .square.dark {
+            background-color: #a98f6b;
+        }
+
+        .piece {
+            font-size: 36px;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+
+        .piece:hover {
+            transform: scale(1.1);
+        }
+
+        .dragging {
+            opacity: 0.6;
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-center items-center">
+    <div class="container mx-auto px-4">
+        <header class="text-center mb-8">
+            <h1 class="text-5xl font-bold text-white mb-4" style="font-family: 'Orbitron', sans-serif;">
+                A-RunChess
+            </h1>
+            <p class="text-xl text-gray-300 max-w-2xl mx-auto">
+                Immerse yourself in the strategic world of chess. Challenge your mind and test your tactical skills.
+            </p>
+        </header>
+
+        <div class="flex justify-center items-center space-x-8">
+            <div class="bg-gradient-to-br from-blue-900 to-indigo-900 p-6 rounded-2xl shadow-2xl">
+                <div class="chessboard w-96 h-96">
+                    <!-- Chessboard will be populated by JavaScript -->
+                </div>
+            </div>
+
+            <div class="bg-white/10 p-6 rounded-2xl text-white shadow-xl">
+                <h2 class="text-2xl font-bold mb-4">Game Controls</h2>
+                <div class="space-y-4">
+                    <button class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300">
+                        New Game
+                    </button>
+                    <button class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300">
+                        Undo Move
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <footer class="text-center mt-8 text-gray-400">
+            <p>&copy; 2025 A-RunChess. All rights reserved.</p>
+        </footer>
+    </div>
+
+    <script src="https://cdn.socket.io/4.8.1/socket.io.min.js" integrity="sha384-mkQ3/7FUtcGyoppY6bz/PORYoGqOl7/aSUMn2ymDOJcapfS6PHqxhRTMh1RR0Q6+" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js" integrity="sha512-xRllwz2gdZciIB+AkEbeq+gVhX8VB8XsfqeFbUh+SzHlN96dEduwtTuVuc2u9EROlmW9+yhRlxjif66ORpsgVA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="/js/chessgame.js"></script>
+</body>
+</html>
