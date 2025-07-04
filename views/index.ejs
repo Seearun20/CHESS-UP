@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.tailwindcss.com"></script>
-    <title>A-RunChess</title>
+    <title>Chess-UP</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@300;400;700&display=swap');
         
@@ -21,6 +21,10 @@
             box-shadow: 0 10px 25px rgba(0,0,0,0.3);
             border-radius: 12px;
             overflow: hidden;
+            width: 100%;
+            max-width: 480px;
+            aspect-ratio: 1;
+            margin: 0 auto;
         }
 
         .piece.white {
@@ -38,8 +42,8 @@
             align-items: center;
             justify-content: center;
             transition: all 0.3s ease;
-            width: 60px;
-            height: 60px;
+            aspect-ratio: 1;
+            min-height: 40px;
         }
 
         .square.light {
@@ -51,7 +55,7 @@
         }
 
         .piece {
-            font-size: 36px;
+            font-size: clamp(24px, 5vw, 36px);
             cursor: pointer;
             transition: transform 0.2s ease;
             user-select: none;
@@ -124,21 +128,23 @@
         }
 
         .player-tag {
-            padding: 10px 20px;
+            padding: 8px 16px;
             border-radius: 12px;
             font-weight: bold;
             display: inline-flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
             transition: all 0.3s ease;
-            min-width: 150px;
+            min-width: 120px;
             justify-content: center;
+            font-size: clamp(12px, 2.5vw, 16px);
         }
 
         .player-tag .color-indicator {
-            width: 15px;
-            height: 15px;
+            width: 12px;
+            height: 12px;
             border-radius: 50%;
+            flex-shrink: 0;
         }
 
         .white-player {
@@ -159,15 +165,16 @@
 
         .score-display {
             background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
-            border-radius: 15px;
-            padding: 20px;
+            border-radius: 12px;
+            padding: 12px;
             color: white;
             text-align: center;
             box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+            min-width: 80px;
         }
 
         .score-number {
-            font-size: 2em;
+            font-size: clamp(1.5em, 4vw, 2em);
             font-weight: bold;
             color: #f39c12;
         }
@@ -175,27 +182,29 @@
         .game-info {
             background: linear-gradient(135deg, #34495e 0%, #2c3e50 100%);
             border-radius: 15px;
-            padding: 20px;
+            padding: 16px;
             color: white;
             box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+            width: 100%;
+            max-width: 320px;
         }
 
         .captured-pieces {
             display: flex;
             flex-wrap: wrap;
-            gap: 5px;
-            margin-top: 10px;
+            gap: 4px;
+            margin-top: 8px;
         }
 
         .captured-piece {
-            font-size: 20px;
+            font-size: clamp(16px, 3vw, 20px);
             opacity: 0.7;
         }
 
         .status-indicator {
-            padding: 5px 15px;
+            padding: 4px 12px;
             border-radius: 20px;
-            font-size: 12px;
+            font-size: clamp(10px, 2vw, 12px);
             font-weight: bold;
             text-transform: uppercase;
         }
@@ -217,31 +226,33 @@
         }
 
         .move-history {
-            max-height: 200px;
+            max-height: 150px;
             overflow-y: auto;
             background: rgba(0,0,0,0.2);
             border-radius: 8px;
-            padding: 10px;
+            padding: 8px;
         }
 
         .move-item {
-            padding: 5px;
+            padding: 4px;
             border-bottom: 1px solid rgba(255,255,255,0.1);
             font-family: monospace;
+            font-size: clamp(12px, 2vw, 14px);
         }
 
         .notification {
             position: fixed;
             top: 20px;
             right: 20px;
-            padding: 15px 20px;
+            padding: 12px 16px;
             border-radius: 8px;
             color: white;
             font-weight: bold;
             z-index: 1000;
-            max-width: 300px;
+            max-width: 280px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.3);
             animation: slideIn 0.3s ease-out;
+            font-size: clamp(12px, 2.5vw, 14px);
         }
 
         .notification.error {
@@ -296,21 +307,22 @@
             align-items: center;
             z-index: 2000;
             animation: fadeIn 0.5s ease-out;
+            padding: 20px;
         }
 
         .modal-content {
             background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
-            padding: 40px;
+            padding: 30px;
             border-radius: 20px;
             text-align: center;
             box-shadow: 0 20px 40px rgba(0,0,0,0.3);
             animation: bounceIn 0.5s ease-out;
             max-width: 400px;
-            width: 90%;
+            width: 100%;
         }
 
         .celebration {
-            font-size: 60px;
+            font-size: clamp(40px, 8vw, 60px);
             margin-bottom: 20px;
             animation: bounce 1s infinite;
         }
@@ -321,15 +333,139 @@
             border: none;
             padding: 12px 30px;
             border-radius: 25px;
-            font-size: 16px;
+            font-size: clamp(14px, 3vw, 16px);
             font-weight: bold;
             cursor: pointer;
             margin-top: 20px;
             transition: transform 0.2s ease;
+            width: 100%;
+            max-width: 200px;
         }
 
         .play-again-btn:hover {
             transform: scale(1.05);
+        }
+
+        .game-title {
+            font-size: clamp(2.5rem, 8vw, 5rem);
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        .vs-text {
+            font-size: clamp(1.5rem, 4vw, 4rem);
+        }
+
+        /* Mobile-specific styles */
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+
+            .chessboard {
+                max-width: 90vw;
+                border-radius: 8px;
+            }
+
+            .game-info {
+                margin-top: 20px;
+                padding: 12px;
+            }
+
+            .notification {
+                top: 10px;
+                right: 10px;
+                left: 10px;
+                max-width: none;
+            }
+
+            .player-names-container {
+                flex-direction: column;
+                gap: 20px;
+            }
+
+            .vs-text {
+                order: 2;
+                margin: 10px 0;
+            }
+
+            .player-section {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                width: 100%;
+                max-width: 300px;
+                gap: 15px;
+            }
+
+            .player-section:first-child {
+                order: 1;
+            }
+
+            .player-section:last-child {
+                order: 3;
+            }
+
+            .score-display {
+                min-width: 60px;
+                padding: 8px;
+            }
+
+            .modal-content {
+                padding: 20px;
+                margin: 10px;
+            }
+
+            .game-layout {
+                flex-direction: column;
+                align-items: center;
+                gap: 20px;
+            }
+
+            .board-container {
+                order: 1;
+            }
+
+            .game-info {
+                order: 2;
+                max-width: 90vw;
+            }
+        }
+
+        /* Tablet styles */
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .chessboard {
+                max-width: 400px;
+            }
+
+            .game-info {
+                max-width: 280px;
+            }
+
+            .player-names-container {
+                gap: 30px;
+            }
+        }
+
+        /* Large screen styles */
+        @media (min-width: 1025px) {
+            .game-layout {
+                align-items: flex-start;
+            }
+        }
+
+        /* Touch device improvements */
+        @media (hover: none) and (pointer: coarse) {
+            .piece:hover {
+                transform: none;
+            }
+
+            .square.selected {
+                box-shadow: inset 0 0 0 4px #4CAF50;
+            }
+
+            .piece {
+                font-size: clamp(28px, 6vw, 40px);
+            }
         }
     </style>
 </head>
@@ -337,7 +473,7 @@
     <!-- Name Input Modal -->
     <div id="name-modal" class="modal-overlay">
         <div class="modal-content">
-            <h2 class="text-2xl font-bold mb-4">Welcome to A-RunChess!</h2>
+            <h2 class="text-2xl font-bold mb-4">Welcome to Chess-UP!</h2>
             <p class="text-gray-600 mb-4">Enter your name to join the game</p>
             <input type="text" id="player-name" class="w-full p-3 border rounded-lg mb-4 text-center text-lg" placeholder="Your Name" maxlength="20">
             <button id="submit-name" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg w-full transition-colors">
@@ -349,89 +485,89 @@
     <!-- Loading Overlay -->
     <div id="loading-overlay">
         <div class="text-center">
-            <div class="text-white text-3xl mb-4">Waiting for another player...</div>
-            <div class="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-white mx-auto"></div>
+            <div class="text-white text-xl sm:text-3xl mb-4">Waiting for another player...</div>
+            <div class="animate-spin rounded-full h-12 w-12 sm:h-16 sm:w-16 border-t-2 border-b-2 border-white mx-auto"></div>
         </div>
     </div>
 
-    <div class="container mx-auto px-4 max-w-7xl">
-        <header class="text-center mb-8">
-            <h1 class="text-5xl font-bold text-white mb-6" style="font-family: 'Orbitron', sans-serif;">
-                A-RunChess
+    <div class="container mx-auto px-4 max-w-7xl w-full">
+        <header class="text-center mb-4 sm:mb-8">
+            <h1 class="game-title font-bold text-white mb-4 sm:mb-6">
+                Chess-UP
             </h1>
             
             <!-- Player Names and Scores -->
-            <div class="flex justify-center items-center space-x-8 mb-6">
-                <div class="text-center">
+            <div class="player-names-container flex justify-center items-center space-x-4 sm:space-x-8 mb-4 sm:mb-6">
+                <div class="player-section text-center">
                     <div id="white-player-name" class="player-tag white-player mb-2">
                         <span class="color-indicator" style="background-color: #f0f0f0;"></span>
-                        Waiting...
+                        <span class="truncate">Waiting...</span>
                     </div>
                     <div class="score-display">
-                        <div class="text-sm">Score</div>
+                        <div class="text-xs sm:text-sm">Score</div>
                         <div id="white-score" class="score-number">0</div>
                     </div>
                 </div>
                 
-                <div class="text-4xl text-white font-bold">VS</div>
+                <div class="vs-text text-white font-bold">VS</div>
                 
-                <div class="text-center">
+                <div class="player-section text-center">
                     <div id="black-player-name" class="player-tag black-player mb-2">
                         <span class="color-indicator" style="background-color: #1a1a1a;"></span>
-                        Waiting...
+                        <span class="truncate">Waiting...</span>
                     </div>
                     <div class="score-display">
-                        <div class="text-sm">Score</div>
+                        <div class="text-xs sm:text-sm">Score</div>
                         <div id="black-score" class="score-number">0</div>
                     </div>
                 </div>
             </div>
         </header>
 
-        <div class="flex justify-center items-start space-x-8">
+        <div class="game-layout flex justify-center items-start space-x-0 sm:space-x-8">
             <!-- Game Board -->
-            <div class="bg-gradient-to-br from-blue-900 to-indigo-900 p-6 rounded-2xl shadow-2xl">
+            <div class="board-container bg-gradient-to-br from-blue-900 to-indigo-900 p-4 sm:p-6 rounded-2xl shadow-2xl">
                 <div class="chessboard">
                     <!-- Chessboard will be populated by JavaScript -->
                 </div>
             </div>
             
             <!-- Game Information Panel -->
-            <div class="game-info" style="min-width: 300px;">
-                <h3 class="text-xl font-bold mb-4">Game Status</h3>
+            <div class="game-info">
+                <h3 class="text-lg sm:text-xl font-bold mb-4">Game Status</h3>
                 
                 <!-- Current Turn -->
                 <div class="mb-4">
-                    <div class="text-sm text-gray-300">Current Turn</div>
-                    <div id="current-turn" class="text-lg font-bold">White</div>
+                    <div class="text-xs sm:text-sm text-gray-300">Current Turn</div>
+                    <div id="current-turn" class="text-base sm:text-lg font-bold">White</div>
                 </div>
                 
                 <!-- Game Status -->
                 <div class="mb-4">
-                    <div class="text-sm text-gray-300">Status</div>
+                    <div class="text-xs sm:text-sm text-gray-300">Status</div>
                     <div id="game-status" class="status-indicator status-normal">Normal</div>
                 </div>
                 
                 <!-- Move Counter -->
                 <div class="mb-4">
-                    <div class="text-sm text-gray-300">Move Count</div>
-                    <div id="move-count" class="text-lg font-bold">0</div>
+                    <div class="text-xs sm:text-sm text-gray-300">Move Count</div>
+                    <div id="move-count" class="text-base sm:text-lg font-bold">0</div>
                 </div>
                 
                 <!-- Captured Pieces -->
                 <div class="mb-4">
-                    <div class="text-sm text-gray-300 mb-2">Captured by White</div>
+                    <div class="text-xs sm:text-sm text-gray-300 mb-2">Captured by White</div>
                     <div id="captured-by-white" class="captured-pieces"></div>
                 </div>
                 
                 <div class="mb-4">
-                    <div class="text-sm text-gray-300 mb-2">Captured by Black</div>
+                    <div class="text-xs sm:text-sm text-gray-300 mb-2">Captured by Black</div>
                     <div id="captured-by-black" class="captured-pieces"></div>
                 </div>
                 
                 <!-- Move History -->
                 <div>
-                    <div class="text-sm text-gray-300 mb-2">Recent Moves</div>
+                    <div class="text-xs sm:text-sm text-gray-300 mb-2">Recent Moves</div>
                     <div id="move-history" class="move-history">
                         <div class="text-center text-gray-400">No moves yet</div>
                     </div>
@@ -439,16 +575,15 @@
             </div>
         </div>
 
-        <footer class="text-center mt-8 text-gray-400">
-            <p>&copy; 2025 A-RunChess. All rights reserved.</p>
+        <footer class="text-center mt-4 sm:mt-8 text-gray-400 text-sm">
+            <p>&copy; 2025 Chess-UP. All rights reserved. Made By Arun Kumar</p>
         </footer>
     </div>
 
     <!-- Scripts -->
     <script src="https://cdn.socket.io/4.8.1/socket.io.min.js" integrity="sha384-mkQ3/7FUtcGyoppY6bz/PORYoGqOl7/aSUMn2ymDOJcapfS6PHqxhRTMh1RR0Q6+" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js" integrity="sha512-xRllwz2gdZciIB+AkEbeq+gVhX8VB8XsfqeFbUh+SzHlN96dEduwtTuVuc2u9EROlmW9+yhRlxjif66ORpsgVA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-   <script>// Chess game client-side logic
-const socket = io();
+   <script>const socket = io();
 
 let draggedElement = null;
 let draggedFrom = null;
@@ -744,255 +879,283 @@ function updateCapturedPieces() {
     capturedByWhite.innerHTML = '';
     capturedByBlack.innerHTML = '';
     
-    // Display pieces captured by white (black pieces)
     gameStats.capturedPieces.white.forEach(piece => {
-        const pieceElement = document.createElement('span');
-        pieceElement.className = 'captured-piece';
+        const pieceElement = document.createElement('div');
+        pieceElement.classList.add('captured-piece');
         pieceElement.textContent = pieces[piece];
         capturedByWhite.appendChild(pieceElement);
     });
     
-    // Display pieces captured by black (white pieces)
     gameStats.capturedPieces.black.forEach(piece => {
-        const pieceElement = document.createElement('span');
-        pieceElement.className = 'captured-piece';
-        pieceElement.textContent = pieces[piece.toUpperCase()];
+        const pieceElement = document.createElement('div');
+        pieceElement.classList.add('captured-piece');
+        pieceElement.textContent = pieces[piece];
         capturedByBlack.appendChild(pieceElement);
     });
 }
 
-// Update scores display
+// Update move history
+function updateMoveHistory(move) {
+    const moveHistory = document.getElementById('move-history');
+    
+    if (gameStats.moveCount === 0) {
+        moveHistory.innerHTML = '';
+    }
+    
+    const moveItem = document.createElement('div');
+    moveItem.classList.add('move-item');
+    moveItem.textContent = `${Math.ceil(gameStats.moveCount / 2)}. ${move}`;
+    moveHistory.appendChild(moveItem);
+    
+    // Scroll to bottom
+    moveHistory.scrollTop = moveHistory.scrollHeight;
+}
+
+// Update scores
 function updateScores() {
     document.getElementById('white-score').textContent = gameStats.scores.white;
     document.getElementById('black-score').textContent = gameStats.scores.black;
 }
 
-// Update move history
-function updateMoveHistory(moveHistory) {
-    const historyElement = document.getElementById('move-history');
-    
-    if (!moveHistory || moveHistory.length === 0) {
-        historyElement.innerHTML = '<div class="text-center text-gray-400">No moves yet</div>';
-        return;
-    }
-    
-    historyElement.innerHTML = '';
-    moveHistory.forEach((moveData, index) => {
-        const moveElement = document.createElement('div');
-        moveElement.className = 'move-item';
-        moveElement.textContent = `${index + 1}. ${moveData.move.san}`;
-        historyElement.appendChild(moveElement);
-    });
-    
-    // Scroll to bottom
-    historyElement.scrollTop = historyElement.scrollHeight;
-}
-
-// Show error message
-function showError(message) {
-    createNotification(message, 'error');
-}
-
-// Show success message
-function showSuccess(message) {
-    createNotification(message, 'success');
-}
-
-// Show info message
-function showInfo(message) {
-    createNotification(message, 'info');
-}
-
-// Create notification
-function createNotification(message, type) {
+// Show notification
+function showNotification(message, type = 'info') {
     const notification = document.createElement('div');
-    notification.className = `notification ${type}`;
+    notification.classList.add('notification', type);
     notification.textContent = message;
     
     document.body.appendChild(notification);
     
-    // Remove after 3 seconds
     setTimeout(() => {
         notification.style.animation = 'slideOut 0.3s ease-in';
         setTimeout(() => {
-            if (notification.parentNode) {
-                notification.parentNode.removeChild(notification);
-            }
+            document.body.removeChild(notification);
         }, 300);
     }, 3000);
 }
 
+// Show error message
+function showError(message) {
+    showNotification(message, 'error');
+}
+
+// Show success message
+function showSuccess(message) {
+    showNotification(message, 'success');
+}
+
+// Show info message
+function showInfo(message) {
+    showNotification(message, 'info');
+}
+
 // Show game over modal
-function showGameOver(data) {
+function showGameOverModal(winner, reason) {
     const modal = document.createElement('div');
-    modal.className = 'modal-overlay';
-    
-    const isWinner = data.winner === playerRole;
-    const isDraw = data.winner === 'draw';
-    
-    let title = 'Game Over';
-    let celebrationIcon = '🎭';
-    
-    if (isDraw) {
-        title = "It's a Draw!";
-        celebrationIcon = '🤝';
-    } else if (isWinner) {
-        title = 'Congratulations!';
-        celebrationIcon = '🎉';
-    } else {
-        title = 'Better Luck Next Time';
-        celebrationIcon = '😔';
-    }
-    
+    modal.classList.add('modal-overlay');
     modal.innerHTML = `
         <div class="modal-content">
-            <div class="celebration">${celebrationIcon}</div>
-            <h2>${title}</h2>
-            <p><strong>${isDraw ? 'Draw' : (data.winner === 'w' ? 'White' : 'Black')} ${isDraw ? '' : 'wins!'}</strong></p>
-            <p class="text-gray-600">${data.reason}</p>
-            <div class="mt-4">
-                <p>Game Length: ${data.gameLength} moves</p>
-                <p>Duration: ${Math.floor(data.gameDuration / 60)}:${String(data.gameDuration % 60).padStart(2, '0')}</p>
-            </div>
-            <div class="mt-4">
-                <p><strong>Final Scores:</strong></p>
-                <p>White: ${data.scores.white} | Black: ${data.scores.black}</p>
-            </div>
-            <button onclick="location.reload()" class="play-again-btn">Play Again</button>
+            <div class="celebration">${winner === 'draw' ? '🤝' : '🎉'}</div>
+            <h2 class="text-2xl font-bold mb-4">
+                ${winner === 'draw' ? 'Game Draw!' : `${winner} Wins!`}
+            </h2>
+            <p class="text-gray-600 mb-4">${reason}</p>
+            <button class="play-again-btn" onclick="location.reload()">
+                Play Again
+            </button>
         </div>
     `;
     
     document.body.appendChild(modal);
-    
-    // Play sound effect
-    if (isWinner) {
-        playSound('victory');
-    } else if (isDraw) {
-        playSound('draw');
-    } else {
-        playSound('defeat');
-    }
 }
 
-// Highlight check squares
-function highlightCheck(player) {
-    // Find the king of the player in check
-    const squares = document.querySelectorAll('.square');
-    squares.forEach(square => {
-        const piece = square.querySelector('.piece');
-        if (piece && piece.dataset.piece === (player === 'w' ? 'K' : 'k')) {
-            square.classList.add('check');
-        }
-    });
-}
-
-// Play sound (placeholder - you can add actual sound files)
-function playSound(type) {
-    // You can implement actual sound playing here
-    console.log(`Playing ${type} sound`);
-}
-
-// Socket event listeners
-socket.on('playerRole', function(role) {
-    playerRole = role;
-    console.log('Player role:', role);
-});
-
-socket.on('spectatorRole', function() {
-    showInfo('You are now spectating the game');
-    playerRole = 'spectator';
-});
-
-socket.on('playerNames', function(names) {
-    document.getElementById('white-player-name').textContent = names.white;
-    document.getElementById('black-player-name').textContent = names.black;
-});
-
-socket.on('gameReady', function() {
+// Socket event handlers
+socket.on('gameStart', (data) => {
     hideLoadingOverlay();
     gameActive = true;
-    showSuccess('Game started! Good luck!');
+    playerRole = data.color;
+    
+    // Update player names
+    document.getElementById('white-player-name').querySelector('span.truncate').textContent = data.players.white;
+    document.getElementById('black-player-name').querySelector('span.truncate').textContent = data.players.black;
+    
+    // Initialize board
+    updateBoard(data.fen);
+    
+    showSuccess(`Game started! You are playing as ${playerRole === 'w' ? 'White' : 'Black'}`);
 });
 
-socket.on('boardState', function(fen) {
-    updateBoard(fen);
-});
-
-socket.on('gameStats', function(stats) {
-    gameStats = stats;
+socket.on('gameState', (data) => {
+    updateBoard(data.fen);
+    gameStats.moveCount = data.moveCount;
+    gameStats.inCheck = data.inCheck;
+    
     updateGameStatus();
     updateCapturedPieces();
     updateScores();
-    if (stats.gameHistory) {
-        updateMoveHistory(stats.gameHistory);
+    
+    if (data.lastMove) {
+        updateMoveHistory(data.lastMove);
+        highlightLastMove(data.lastMove);
     }
 });
 
-socket.on('move', function(moveData) {
-    showInfo(`${moveData.san}${moveData.captured ? ' (captured ' + pieces[moveData.captured] + ')' : ''}`);
+socket.on('move', (data) => {
+    updateBoard(data.fen);
+    gameStats.moveCount++;
     
-    // Highlight the last move squares
-    setTimeout(() => {
-        const fromSquare = document.querySelector(`[data-square="${moveData.from}"]`);
-        const toSquare = document.querySelector(`[data-square="${moveData.to}"]`);
-        if (fromSquare) fromSquare.classList.add('last-move');
-        if (toSquare) toSquare.classList.add('last-move');
-        
-        // Remove highlights after 2 seconds
-        setTimeout(() => {
-            if (fromSquare) fromSquare.classList.remove('last-move');
-            if (toSquare) toSquare.classList.remove('last-move');
-        }, 2000);
-    }, 100);
+    if (data.captured) {
+        const capturedPiece = data.captured;
+        const capturedBy = data.turn === 'w' ? 'black' : 'white';
+        gameStats.capturedPieces[capturedBy].push(capturedPiece);
+    }
+    
+    updateGameStatus();
+    updateCapturedPieces();
+    updateMoveHistory(data.move);
+    highlightLastMove(data.move);
 });
 
-socket.on('invalidMove', function(data) {
-    showError(data.reason || 'Invalid move! Please try again.');
+socket.on('invalidMove', (message) => {
+    showError(message);
     clearSelection();
 });
 
-socket.on('check', function(data) {
-    showInfo(`${data.player === 'w' ? 'White' : 'Black'} is in check!`);
-    highlightCheck(data.player);
-});
-
-socket.on('pieceeCaptured', function(data) {
-    showInfo(`${pieces[data.piece]} captured!`);
-});
-
-socket.on('gameOver', function(data) {
+socket.on('gameOver', (data) => {
     gameActive = false;
-    setTimeout(() => {
-        showGameOver(data);
-    }, 1000); // Delay to show the final move
+    showGameOverModal(data.winner, data.reason);
+    
+    // Update scores
+    if (data.winner === 'White') {
+        gameStats.scores.white++;
+    } else if (data.winner === 'Black') {
+        gameStats.scores.black++;
+    }
+    updateScores();
 });
 
-socket.on('playerDisconnected', function(data) {
+socket.on('playerDisconnected', (message) => {
     gameActive = false;
-    showError(`${data.playerName || 'Your opponent'} has disconnected`);
+    showError(message);
     showLoadingOverlay();
 });
 
-socket.on('resetGame', function() {
-    gameActive = false;
-    clearSelection();
-    createBoard();
-    gameStats = {
-        moveCount: 0,
-        capturedPieces: { white: [], black: [] },
-        inCheck: false,
-        scores: gameStats.scores // Preserve scores
-    };
+socket.on('playerReconnected', (message) => {
+    gameActive = true;
+    hideLoadingOverlay();
+    showSuccess(message);
+});
+
+socket.on('check', (data) => {
+    gameStats.inCheck = true;
     updateGameStatus();
-    updateCapturedPieces();
-    updateMoveHistory([]);
+    showInfo(`${data.turn === 'w' ? 'White' : 'Black'} is in check!`);
+    
+    // Highlight king in check
+    highlightKingInCheck(data.kingSquare);
 });
 
-socket.on('scoresUpdate', function(scores) {
-    gameStats.scores = scores;
-    updateScores();
+socket.on('error', (message) => {
+    showError(message);
 });
 
-// Request initial game state
-socket.emit('getBoardState');
-socket.emit('getGameStats');</script>
+// Highlight last move
+function highlightLastMove(move) {
+    clearHighlights();
+    
+    const fromSquare = document.querySelector(`[data-square="${move.from}"]`);
+    const toSquare = document.querySelector(`[data-square="${move.to}"]`);
+    
+    if (fromSquare) fromSquare.classList.add('last-move');
+    if (toSquare) toSquare.classList.add('last-move');
+}
+
+// Highlight king in check
+function highlightKingInCheck(kingSquare) {
+    const square = document.querySelector(`[data-square="${kingSquare}"]`);
+    if (square) {
+        square.classList.add('check');
+    }
+}
+
+// Initialize starting position
+const startingFen = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
+updateBoard(startingFen);
+
+// Handle window resize for responsive design
+window.addEventListener('resize', function() {
+    // Adjust board size if needed
+    const board = document.querySelector('.chessboard');
+    if (board) {
+        // Force recalculation of board dimensions
+        board.style.width = '';
+        board.style.height = '';
+    }
+});
+
+// Handle visibility change (tab switching)
+document.addEventListener('visibilitychange', function() {
+    if (!document.hidden && gameActive) {
+        // Refresh game state when tab becomes visible
+        socket.emit('requestGameState');
+    }
+});
+
+// Keyboard shortcuts
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        clearSelection();
+    }
+});
+
+// Touch device support
+let touchStartX = 0;
+let touchStartY = 0;
+
+document.addEventListener('touchstart', function(e) {
+    touchStartX = e.touches[0].clientX;
+    touchStartY = e.touches[0].clientY;
+});
+
+document.addEventListener('touchmove', function(e) {
+    e.preventDefault(); // Prevent scrolling
+});
+
+// Prevent context menu on long press
+document.addEventListener('contextmenu', function(e) {
+    e.preventDefault();
+});
+
+// Handle connection status
+socket.on('connect', () => {
+    showSuccess('Connected to server');
+});
+
+socket.on('disconnect', () => {
+    showError('Disconnected from server');
+    gameActive = false;
+});
+
+socket.on('reconnect', () => {
+    showSuccess('Reconnected to server');
+});
+
+// Performance optimization: debounce resize events
+let resizeTimeout;
+window.addEventListener('resize', function() {
+    clearTimeout(resizeTimeout);
+    resizeTimeout = setTimeout(function() {
+        // Recalculate board dimensions
+        const board = document.querySelector('.chessboard');
+        if (board) {
+            board.style.width = '';
+            board.style.height = '';
+        }
+    }, 250);
+});
+
+// Cleanup on page unload
+window.addEventListener('beforeunload', function() {
+    if (socket.connected) {
+        socket.disconnect();
+    }
+});</script>
