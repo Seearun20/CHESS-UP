@@ -136,6 +136,10 @@ class ChessGame {
             });
             
             console.log(`${name} joined game ${this.gameId} as White player`);
+            
+            // Send initial board state
+            this.sendGameState(socket);
+            
             return 'white';
         } else if (!this.players.black.id) {
             this.players.black = { id: socket.id, name: name, score: this.players.black.score };
@@ -147,8 +151,25 @@ class ChessGame {
                 black: name
             });
             
+            // Game is now ready to start
             this.gameStartTime = new Date();
             this.gameInProgress = true;
+            
+            // Send board state to both players
+            this.broadcast("boardState", this.chess.fen());
+            this.broadcast("gameStats", {
+                moveCount: this.chess.history().length,
+                capturedPieces: this.getCapturedPieces(),
+                currentTurn: this.chess.turn(),
+                inCheck: this.chess.inCheck(),
+                scores: {
+                    white: this.players.white.score,
+                    black: this.players.black.score
+                },
+                gameInProgress: this.gameInProgress,
+                gameId: this.gameId
+            });
+            
             this.broadcast("gameReady");
             console.log(`${name} joined game ${this.gameId} as Black player. Game started!`);
             return 'black';
@@ -157,6 +178,10 @@ class ChessGame {
             this.spectators.push({ id: socket.id, name: name });
             socket.emit("spectatorRole");
             socket.emit("gameId", this.gameId);
+            
+            // Send current game state to spectator
+            this.sendGameState(socket);
+            
             console.log(`${name} joined game ${this.gameId} as spectator`);
             return 'spectator';
         }
@@ -171,10 +196,12 @@ class ChessGame {
             disconnectedPlayer = this.players.white.name;
             playerRole = 'white';
             this.players.white.id = null;
+            this.players.white.name = null;
         } else if (this.players.black.id === socketId) {
             disconnectedPlayer = this.players.black.name;
             playerRole = 'black';
             this.players.black.id = null;
+            this.players.black.name = null;
         } else {
             // Remove from spectators
             this.spectators = this.spectators.filter(spec => spec.id !== socketId);
@@ -284,9 +311,9 @@ io.on("connection", (uniquesocket) => {
             // Create new game or join existing waiting game
             let foundGame = null;
             
-            // Look for a game that needs players
+            // Look for a game that needs players (prioritize games with one player)
             Object.values(games).forEach(game => {
-                if (!foundGame && (!game.players.white.id || !game.players.black.id)) {
+                if (!foundGame && (!game.players.white.id || !game.players.black.id) && !game.gameInProgress) {
                     foundGame = game;
                 }
             });
@@ -298,20 +325,14 @@ io.on("connection", (uniquesocket) => {
             currentGame = foundGame;
             const role = currentGame.addPlayer(uniquesocket, name);
             
-            // Send current game state
-            currentGame.sendGameState(uniquesocket);
+            console.log(`Player ${name} assigned role: ${role} in game ${currentGame.gameId}`);
             
-            // Send updated scores
-            currentGame.broadcast("scoresUpdate", {
-                white: currentGame.players.white.score,
-                black: currentGame.players.black.score
-            });
         } else {
             // Default behavior - try to join any available game or create new one
             let foundGame = null;
             
             Object.values(games).forEach(game => {
-                if (!foundGame && (!game.players.white.id || !game.players.black.id)) {
+                if (!foundGame && (!game.players.white.id || !game.players.black.id) && !game.gameInProgress) {
                     foundGame = game;
                 }
             });
@@ -323,16 +344,12 @@ io.on("connection", (uniquesocket) => {
             currentGame = foundGame;
             const role = currentGame.addPlayer(uniquesocket, name);
             
-            currentGame.sendGameState(uniquesocket);
-            
-            currentGame.broadcast("scoresUpdate", {
-                white: currentGame.players.white.score,
-                black: currentGame.players.black.score
-            });
+            console.log(`Player ${name} assigned role: ${role} in game ${currentGame.gameId}`);
         }
     });
 
     uniquesocket.on("disconnect", () => {
+        console.log('User disconnected:', uniquesocket.id);
         if (currentGame) {
             const result = currentGame.removePlayer(uniquesocket.id);
             
@@ -342,7 +359,10 @@ io.on("connection", (uniquesocket) => {
     });
 
     uniquesocket.on("move", (move) => {
-        if (!currentGame) return;
+        if (!currentGame) {
+            uniquesocket.emit("invalidMove", { reason: "No active game" });
+            return;
+        }
         
         try {
             // Validate it's the correct player's turn
