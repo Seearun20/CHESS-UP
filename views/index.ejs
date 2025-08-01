@@ -467,20 +467,150 @@
                 font-size: clamp(28px, 6vw, 40px);
             }
         }
+        .game-item {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border: 2px solid #dee2e6;
+    border-radius: 12px;
+    padding: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: left;
+}
+
+.game-item:hover {
+    border-color: #007bff;
+    background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,123,255,0.15);
+}
+
+.game-item.selected {
+    border-color: #28a745;
+    background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+}
+
+.game-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.game-players {
+    font-weight: bold;
+    color: #495057;
+}
+
+.game-meta {
+    display: flex;
+    gap: 12px;
+    font-size: 12px;
+    color: #6c757d;
+}
+
+.game-status-badge {
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 10px;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.status-active {
+    background: linear-gradient(135deg, #28a745, #20c997);
+    color: white;
+}
+
+.status-waiting {
+    background: linear-gradient(135deg, #ffc107, #fd7e14);
+    color: white;
+}
+
+.empty-games {
+    text-align: center;
+    color: #6c757d;
+    padding: 40px 20px;
+    font-style: italic;
+}
+
+.loading-games {
+    text-align: center;
+    color: #007bff;
+    padding: 20px;
+}
+
+.spectator-indicator {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    background: linear-gradient(135deg, #6f42c1, #e83e8c);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: bold;
+    z-index: 1000;
+    box-shadow: 0 4px 12px rgba(111, 66, 193, 0.3);
+}
+
+.game-id-display {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: linear-gradient(135deg, #17a2b8, #007bff);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: bold;
+    z-index: 1000;
+    box-shadow: 0 4px 12px rgba(23, 162, 184, 0.3);
+}
     </style>
 </head>
 <body class="min-h-screen flex flex-col justify-center items-center">
     <!-- Name Input Modal -->
-    <div id="name-modal" class="modal-overlay">
-        <div class="modal-content">
-            <h2 class="text-2xl font-bold mb-4">Welcome to Chess-UP!</h2>
-            <p class="text-gray-600 mb-4">Enter your name to join the game</p>
-            <input type="text" id="player-name" class="w-full p-3 border rounded-lg mb-4 text-center text-lg" placeholder="Your Name" maxlength="20">
-            <button id="submit-name" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg w-full transition-colors">
-                Join Game
+   <!-- Welcome/Game Selection Modal -->
+<div id="welcome-modal" class="modal-overlay">
+    <div class="modal-content" style="max-width: 500px;">
+        <h2 class="text-3xl font-bold mb-4">Welcome to Chess-UP!</h2>
+        <p class="text-gray-600 mb-6">Choose how you'd like to join the game</p>
+        
+        <input type="text" id="player-name" class="w-full p-3 border rounded-lg mb-4 text-center text-lg" placeholder="Your Name" maxlength="20">
+        
+        <div class="space-y-3">
+            <button id="new-game-btn" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition-colors">
+                🎯 Start New Game
+            </button>
+            
+            <button id="spectate-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition-colors">
+                👁️ Spectate Live Games
             </button>
         </div>
     </div>
+</div>
+
+<!-- Spectate Games Modal -->
+<div id="spectate-modal" class="modal-overlay" style="display: none;">
+    <div class="modal-content" style="max-width: 600px;">
+        <h2 class="text-2xl font-bold mb-4">Live Games</h2>
+        <p class="text-gray-600 mb-4">Choose a game to spectate</p>
+        
+        <div id="games-list" class="space-y-3 max-h-60 overflow-y-auto mb-4">
+            <!-- Games will be populated here -->
+        </div>
+        
+        <div class="flex space-x-3">
+            <button id="back-to-welcome" class="flex-1 bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg transition-colors">
+                Back
+            </button>
+            <button id="refresh-games" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition-colors">
+                🔄 Refresh
+            </button>
+        </div>
+    </div>
+</div>
 
     <!-- Loading Overlay -->
     <div id="loading-overlay">

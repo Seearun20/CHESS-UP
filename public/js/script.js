@@ -1,6 +1,11 @@
 // Chess game client-side logic
 const socket = io();
 
+// Add these variables at the top
+let selectedGameId = null;
+let isSpectator = false;
+let availableGames = [];
+
 let draggedElement = null;
 let draggedFrom = null;
 let playerRole = null;
@@ -21,36 +26,151 @@ const pieces = {
 
 // Initialize the game
 document.addEventListener('DOMContentLoaded', function() {
-    showNameModal();
+    showWelcomeModal(); // Changed from showNameModal
     createBoard();
     setupEventListeners();
 });
 
+socket.on('availableGames', (games) => {
+    updateGamesList(games);
+});
+
+socket.on('spectatorRole', () => {
+    isSpectator = true;
+    gameActive = true; // Spectators can see the game
+    showSpectatorIndicator();
+    hideLoadingOverlay();
+    showSuccess('Now spectating the game!');
+});
+
 // Show name input modal
-function showNameModal() {
-    document.getElementById('name-modal').style.display = 'flex';
+function showWelcomeModal() {
+    document.getElementById('welcome-modal').style.display = 'flex';
+    // Request available games when modal opens
+    socket.emit('getAvailableGames');
 }
 
 // Setup event listeners
 function setupEventListeners() {
-    document.getElementById('submit-name').addEventListener('click', function() {
+    // New game button
+    document.getElementById('new-game-btn').addEventListener('click', function() {
         const name = document.getElementById('player-name').value.trim();
         if (name) {
             socket.emit('playerRegistered', { name: name, action: 'newGame' });
-            document.getElementById('name-modal').style.display = 'none';
+            document.getElementById('welcome-modal').style.display = 'none';
             showLoadingOverlay();
         } else {
             showError('Please enter your name');
         }
     });
 
+    // Spectate button
+    document.getElementById('spectate-btn').addEventListener('click', function() {
+        const name = document.getElementById('player-name').value.trim();
+        if (name) {
+            showSpectateModal();
+        } else {
+            showError('Please enter your name');
+        }
+    });
+
+    // Back to welcome
+    document.getElementById('back-to-welcome').addEventListener('click', function() {
+        document.getElementById('spectate-modal').style.display = 'none';
+        document.getElementById('welcome-modal').style.display = 'flex';
+    });
+
+    // Refresh games
+    document.getElementById('refresh-games').addEventListener('click', function() {
+        socket.emit('getAvailableGames');
+        showLoadingGames();
+    });
+
+    // Enter key support
     document.getElementById('player-name').addEventListener('keypress', function(e) {
         if (e.key === 'Enter') {
-            document.getElementById('submit-name').click();
+            document.getElementById('new-game-btn').click();
         }
     });
 }
 
+function showSpectateModal() {
+    document.getElementById('welcome-modal').style.display = 'none';
+    document.getElementById('spectate-modal').style.display = 'flex';
+    socket.emit('getAvailableGames');
+    showLoadingGames();
+}
+
+function showLoadingGames() {
+    const gamesList = document.getElementById('games-list');
+    gamesList.innerHTML = '<div class="loading-games">Loading games...</div>';
+}
+
+function updateGamesList(games) {
+    const gamesList = document.getElementById('games-list');
+    availableGames = games;
+    
+    if (games.length === 0) {
+        gamesList.innerHTML = '<div class="empty-games">No active games available for spectating</div>';
+        return;
+    }
+    
+    gamesList.innerHTML = '';
+    
+    games.forEach(game => {
+        const gameItem = document.createElement('div');
+        gameItem.classList.add('game-item');
+        gameItem.dataset.gameId = game.gameId;
+        
+        const statusClass = game.gameInProgress ? 'status-active' : 'status-waiting';
+        const statusText = game.gameInProgress ? 'Active' : 'Waiting';
+        
+        gameItem.innerHTML = `
+            <div class="game-info">
+                <div>
+                    <div class="game-players">
+                        ${game.players.white || 'Waiting...'} vs ${game.players.black || 'Waiting...'}
+                    </div>
+                    <div class="game-meta">
+                        <span>Game #${game.gameId}</span>
+                        <span>Moves: ${game.moveCount}</span>
+                        <span>Spectators: ${game.spectatorCount}</span>
+                    </div>
+                </div>
+                <div class="game-status-badge ${statusClass}">
+                    ${statusText}
+                </div>
+            </div>
+        `;
+        
+        gameItem.addEventListener('click', () => selectGame(game.gameId, gameItem));
+        gamesList.appendChild(gameItem);
+    });
+    
+    // Add spectate button
+    const spectateButton = document.createElement('button');
+    spectateButton.id = 'confirm-spectate';
+    spectateButton.className = 'w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-lg transition-colors mt-4';
+    spectateButton.textContent = '👁️ Spectate Selected Game';
+    spectateButton.disabled = true;
+    spectateButton.style.opacity = '0.5';
+    
+    spectateButton.addEventListener('click', function() {
+        if (selectedGameId) {
+            const name = document.getElementById('player-name').value.trim();
+            socket.emit('playerRegistered', { 
+                name: name, 
+                action: 'spectate', 
+                gameId: selectedGameId 
+            });
+            document.getElementById('spectate-modal').style.display = 'none';
+            isSpectator = true;
+            showSpectatorIndicator();
+        }
+    });
+    
+    gamesList.appendChild(spectateButton);
+}
 // Show loading overlay
 function showLoadingOverlay() {
     document.getElementById('loading-overlay').style.display = 'flex';
@@ -230,6 +350,35 @@ function handleSquareClick(e) {
         }
     }
 }
+function selectGame(gameId, gameElement) {
+    // Remove previous selection
+    document.querySelectorAll('.game-item').forEach(item => {
+        item.classList.remove('selected');
+    });
+    
+    // Select current game
+    gameElement.classList.add('selected');
+    selectedGameId = gameId;
+    
+    // Enable spectate button
+    const spectateButton = document.getElementById('confirm-spectate');
+    spectateButton.disabled = false;
+    spectateButton.style.opacity = '1';
+}
+
+function showSpectatorIndicator() {
+    const indicator = document.createElement('div');
+    indicator.className = 'spectator-indicator';
+    indicator.innerHTML = '👁️ SPECTATING';
+    document.body.appendChild(indicator);
+}
+
+function showGameIdDisplay(gameId) {
+    const display = document.createElement('div');
+    display.className = 'game-id-display';
+    display.innerHTML = `Game #${gameId}`;
+    document.body.appendChild(display);
+}
 
 // Clear selection
 function clearSelection() {
@@ -401,15 +550,17 @@ function showGameOverModal(winner, reason) {
     document.body.appendChild(modal);
 }
 
-// Socket event handlers
 socket.on('playerRole', (role) => {
     playerRole = role;
     console.log('Assigned role:', role);
+    isSpectator = false;
 });
 
 socket.on('gameId', (gameId) => {
     console.log('Game ID:', gameId);
+    showGameIdDisplay(gameId);
 });
+
 
 socket.on('playerNames', (players) => {
     const whitePlayerElement = document.getElementById('white-player-name');

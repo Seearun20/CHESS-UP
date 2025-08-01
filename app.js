@@ -122,71 +122,78 @@ class ChessGame {
 
     // Add player to game
     addPlayer(socket, name) {
-        const roomName = `game-${this.gameId}`;
-        socket.join(roomName);
+    const roomName = `game-${this.gameId}`;
+    socket.join(roomName);
 
-        if (!this.players.white.id) {
-            this.players.white = { id: socket.id, name: name, score: this.players.white.score };
-            socket.emit("playerRole", "w");
-            socket.emit("gameId", this.gameId);
-            
-            this.broadcast("playerNames", {
-                white: name,
-                black: this.players.black.name || "Waiting..."
-            });
-            
-            console.log(`${name} joined game ${this.gameId} as White player`);
-            
-            // Send initial board state
-            this.sendGameState(socket);
-            
-            return 'white';
-        } else if (!this.players.black.id) {
-            this.players.black = { id: socket.id, name: name, score: this.players.black.score };
-            socket.emit("playerRole", "b");
-            socket.emit("gameId", this.gameId);
-            
-            this.broadcast("playerNames", {
-                white: this.players.white.name,
-                black: name
-            });
-            
-            // Game is now ready to start
-            this.gameStartTime = new Date();
-            this.gameInProgress = true;
-            
-            // Send board state to both players
-            this.broadcast("boardState", this.chess.fen());
-            this.broadcast("gameStats", {
-                moveCount: this.chess.history().length,
-                capturedPieces: this.getCapturedPieces(),
-                currentTurn: this.chess.turn(),
-                inCheck: this.chess.inCheck(),
-                scores: {
-                    white: this.players.white.score,
-                    black: this.players.black.score
-                },
-                gameInProgress: this.gameInProgress,
-                gameId: this.gameId
-            });
-            
-            this.broadcast("gameReady");
-            console.log(`${name} joined game ${this.gameId} as Black player. Game started!`);
-            return 'black';
-        } else {
-            // Add as spectator
-            this.spectators.push({ id: socket.id, name: name });
-            socket.emit("spectatorRole");
-            socket.emit("gameId", this.gameId);
-            
-            // Send current game state to spectator
-            this.sendGameState(socket);
-            
-            console.log(`${name} joined game ${this.gameId} as spectator`);
-            return 'spectator';
-        }
+    if (!this.players.white.id) {
+        this.players.white = { id: socket.id, name: name, score: this.players.white.score };
+        socket.emit("playerRole", "w");
+        socket.emit("gameId", this.gameId);
+        
+        this.broadcast("playerNames", {
+            white: name,
+            black: this.players.black.name || "Waiting..."
+        });
+        
+        console.log(`${name} joined game ${this.gameId} as White player`);
+        this.sendGameState(socket);
+        
+        return 'white';
+    } else if (!this.players.black.id) {
+        this.players.black = { id: socket.id, name: name, score: this.players.black.score };
+        socket.emit("playerRole", "b");
+        socket.emit("gameId", this.gameId);
+        
+        this.broadcast("playerNames", {
+            white: this.players.white.name,
+            black: name
+        });
+        
+        this.gameStartTime = new Date();
+        this.gameInProgress = true;
+        
+        this.broadcast("boardState", this.chess.fen());
+        this.broadcast("gameStats", {
+            moveCount: this.chess.history().length,
+            capturedPieces: this.getCapturedPieces(),
+            currentTurn: this.chess.turn(),
+            inCheck: this.chess.inCheck(),
+            scores: {
+                white: this.players.white.score,
+                black: this.players.black.score
+            },
+            gameInProgress: this.gameInProgress,
+            gameId: this.gameId
+        });
+        
+        this.broadcast("gameReady");
+        console.log(`${name} joined game ${this.gameId} as Black player. Game started!`);
+        
+        // Update all clients with new available games list
+        io.emit("availableGames", getAvailableGames());
+        
+        return 'black';
+    } else {
+        // Add as spectator
+        this.spectators.push({ id: socket.id, name: name });
+        socket.emit("spectatorRole");
+        socket.emit("gameId", this.gameId);
+        
+        // Send player names to spectator
+        socket.emit("playerNames", {
+            white: this.players.white.name,
+            black: this.players.black.name
+        });
+        
+        this.sendGameState(socket);
+        console.log(`${name} joined game ${this.gameId} as spectator`);
+        
+        // Update games list for all clients
+        io.emit("availableGames", getAvailableGames());
+        
+        return 'spectator';
     }
-
+}
     // Remove player from game
     removePlayer(socketId) {
         let disconnectedPlayer = null;
